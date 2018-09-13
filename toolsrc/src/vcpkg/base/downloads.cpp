@@ -50,6 +50,19 @@ namespace vcpkg::Downloads
         // Specify an HTTP server.
         auto hConnect = WinHttpConnect(hSession, Strings::to_utf16(hostname).c_str(), INTERNET_DEFAULT_HTTPS_PORT, 0);
         Checks::check_exit(VCPKG_LINE_INFO, hConnect, "WinHttpConnect() failed: %d", GetLastError());
+		
+        // Set proxy settings (server + credentials)
+        WINHTTP_PROXY_INFO corpProxy = { 0 };
+        corpProxy.dwAccessType = WINHTTP_ACCESS_TYPE_NAMED_PROXY;
+        corpProxy.lpszProxy = L"http://<proxyserver>:<port>";
+        if (!WinHttpSetOption(hSession, WINHTTP_OPTION_PROXY, &corpProxy, sizeof(corpProxy)))
+        {
+        	wprintf(L"Unable to set corpProxy.\n");
+        }
+        char* proxyuser = "B123456";
+        char* proxypwd = "password";
+        WinHttpSetOption(hSession, WINHTTP_OPTION_PROXY_USERNAME, proxyuser, strlen(proxyuser));
+        WinHttpSetOption(hSession, WINHTTP_OPTION_PROXY_PASSWORD, proxypwd, strlen(proxypwd));
 
         // Create an HTTP request handle.
         auto hRequest = WinHttpOpenRequest(hConnect,
